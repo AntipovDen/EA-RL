@@ -1,14 +1,24 @@
 from matplotlib import pyplot as plt
-from math import log
+from math import log, factorial
+from fractions import Fraction
 
+combinations = [[1]]
+for i in range(1, 1001):
+    combinations.append([0] * (i + 1))
+    combinations[i][0] = combinations[i][i] = 1
+    for j in range(1, i):
+        combinations[i][j] = combinations[i - 1][j - 1] + combinations[i - 1][j]
 
 # first stage
 def a_and_b(n):
-    a = [n, n]
-    b = [n, n]
-    for i in range(2, n // 2):
-        a.append(n - i / 3 - (n - i + 1) * 2 * i / 3 / a[-1])
-        b.append(n + b[-1] * 2 * i / 3 / a[i - 1])
+    # a = [n, n]
+    # b = [n, n]
+    a = [n - i for i in range(n // 2)]
+    b = [n]
+    for i in range(1, n // 2):
+        # a.append(n - i / 3 - (n - i + 1) * 2 * i / 3 / a[-1])
+        # b.append(n + b[-1] * 2 * i / 3 / a[i - 1])
+        b.append(n + b[-1] *  i /  a[i - 1])
     return a, b
 
 
@@ -41,10 +51,13 @@ def compare_solutions(n=1000):
 
 
 
-n = 100
+n = 1000
 _, b = a_and_b(n)
-b_1 = [n * (1 + 2 * i / (3 * n - 5 * i)) - b[i] for i in range(n // 2)]
+# b_1 = [n * sum([Fraction(factorial(n - i) * factorial(i)) / Fraction(factorial(k) * factorial(n -  k)) for k in range(i + 1)])  for i in range(n // 2)]
+b_1 = [n * (n - i + 1) / (n - 2 * i + 1) for i in range(n // 2)]
 # b_deriv = [b_1[i] - b_1[i - 1] for i in range(1, n // 2)]
-# plt.plot(range(n//2), b, 'bo')
+for i in range(n // 2):
+    print(i, 2 ** i, combinations[n][i])
+plt.plot(range(n//2), b, 'bo')
 plt.plot(range(n//2), b_1, 'ro')
 plt.show()
