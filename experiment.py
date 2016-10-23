@@ -64,7 +64,7 @@ class Learning_agent:
         return self.q[self.state][self.last_action][1]
 
 
-def run(n, l):
+def run_without_restarts(n, l):
     ea = Evolutionary_algorithm(n, l, lambda om: jump_nl(om, n, l), 4.85 * n * (log(n) + 1))
     la = Learning_agent(n, l)
     while True:
@@ -87,12 +87,15 @@ def run(n, l):
                     print("restart after {} iterations on the 3d phase, wrong function selected".format(-state))
                 else:
                     print("restart after {} iterations on the 3d phase, appropriate function selected".format(-state))
-            run(n, l)
-            return
+            return False
         if state == n:
             print("Optimum found in {} iterations".format(ea.iterations))
-            return
+            return True
         la.modify(reward, state)
+
+def run(n, l):
+    while not run_without_restarts(n, l):
+        pass
 
 for n in [10, 20, 100, 1000, 10000]:
     for l in [n // 2 - 1, n // 4, 1]:
