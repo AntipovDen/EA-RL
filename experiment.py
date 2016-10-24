@@ -31,9 +31,11 @@ class Evolutionary_algorithm:
         i = randint(0, self.n - 1)
         if i < self.om and objective(self.om) <= objective(self.om - 1):
             reward = self.target_obj(self.om - 1) - self.target_obj(self.om)
+            self.iterations_without_change = 0
             self.om -= 1
         elif i >= self.om and objective(self.om) <= objective(self.om + 1):
             reward = self.target_obj(self.om + 1) - self.target_obj(self.om)
+            self.iterations_without_change = 0
             self.om += 1
         else:
             reward = 0
@@ -72,24 +74,24 @@ def run_without_restarts(n, l):
         if state < 0:
             #restart
             if la.state == 0 and la.q[0][0][0] == 0 and la.q[0][1][0] == 0:
-                print("restart after {} iterations on the 1st phase".format(-state))
+                print("r 1 i {}".format(-state)) #restart on the first phase
             elif la.state != 0:
                 if la.state != n - l - 1:
-                    print("restart after {} iterations on the 2nd phase in the state {}".format(-state, la.state))
+                    print("r 2 i {} s {}".format(-state, la.state)) #restart during the second phase
                 elif la.q[0][1][0] > 0: #wrong function has been chosen
                     falls = int(la.q[n - l - 1][0][0] < 0 and  la.q[n - l - 1][2][0] < 0 + \
                             la.q[n - l - 1][0][0] < 0 or  la.q[n - l - 1][2][0] < 0)
-                    print("restart after {} iterations on the 2nd phase in the end of the phase, {} falls detected, wrong function selected".format(-state, falls))
+                    print("r 2 i {} s {} f {} wf".format(-state, n - l - 1, falls))
                 elif la.q[n - l - 1][0][0] < 0 and  la.q[n - l - 1][2][0] < 0: #two fall backs before falling forward
-                    print("restart after {} iterations on the 2nd phase in the end of the phase, 2 falls detected".format(-state))
+                    print("r 2 i {} s {} f 2".format(-state, n - l - 1))
             elif ea.om >= n - l:
                 if la.q[0][1][0] > 0:
-                    print("restart after {} iterations on the 3d phase, wrong function selected".format(-state))
+                    print("r 3 i {} wf".format(-state))
                 else:
-                    print("restart after {} iterations on the 3d phase, appropriate function selected".format(-state))
+                    print("r 3 i {}".format(-state))
             return False
         if state == n:
-            print("Optimum found in {} iterations".format(ea.iterations))
+            print("s {} ".format(ea.iterations))
             return True
         la.modify(reward, state)
 
@@ -100,6 +102,6 @@ def run(n, l):
 for n in [10, 20, 100, 1000, 10000]:
     for l in [n // 2 - 1, n // 4, 1]:
         for run_number in range(100):
-            print('Run n{}l{} number {}'.format(n, l, run_number + 1))
+            print('n {} l {} r {}'.format(n, l, run_number + 1))
             run(n, l)
             print()
