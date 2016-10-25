@@ -1,6 +1,9 @@
 from math import log
 from random import randint
 
+MIN = 2.2250738585072014e-308
+
+
 def jump_nl(om, n, l):
     if om > l and om < n - l:
         return om
@@ -8,16 +11,25 @@ def jump_nl(om, n, l):
         return n
     return 0
 
+
 def rb_nl(om, n, l):
     if om >= n - l:
         return om
     return 0
+
 
 def lb_nl(om, n, l):
     if om <= l:
         return om
     return 0
 
+
+def sign(a):
+    if a > 0:
+        return 1
+    elif a < 0:
+        return -1
+    return 0
 
 
 class Evolutionary_algorithm:
@@ -56,8 +68,11 @@ class Learning_agent:
         self.last_action = -1
 
     def modify(self, reward, new_state):
-        self.q[self.state][self.last_action][0] = (1 - self.alpha) * self.q[self.state][self.last_action][0] + self.alpha * (reward + self.gamma * max([self.q[new_state][i][0] for i in range(3)]))
-        self.state = new_state
+        if reward != 0 or new_state != self.state:
+            self.q[self.state][self.last_action][0] = (1 - self.alpha) * self.q[self.state][self.last_action][0] + self.alpha * (reward + self.gamma * max([self.q[new_state][i][0] for i in range(3)]))
+            self.state = new_state
+        else:
+            self.q[self.state][self.last_action][0] = max(MIN, (1 - self.alpha * (1 - self.gamma)) * abs(self.q[self.state][self.last_action][0])) * sign(self.q[self.state][self.last_action][0])
 
     def select(self):
         m = max([self.q[self.state][i][0] for i in range(3)])
