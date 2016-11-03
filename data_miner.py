@@ -104,12 +104,12 @@ for n in [10, 20, 100, 1000, 10000]:
         print("{0:.2f} & ".format(wf * 100/r), end='')
         # print("Phase 3: {}".format(p3 * 100/r))
         tr = 3 * n * (log(l) + 1) / 2 + 5 * n * log((n - l) / (l + 1)) + 3 * n + 4.85 * n * (log(n) + 1)
-        print("{0:.2f} ({1:.2f}) & ".format(s / r, tr), end='')
+        print("{0:.2f} & ".format(tr / s  * r), end='')
 
         # count mean number of ierations in the run without restart:
         ts = 5 * n * (log(l) + 1) / 2 + 5 * n * log((n - l) / (l + 1)) + n
-        print("{0:.2f} ({1:.2f}) & ".format(sum([gb.runs[-1].iterations for gb in runs[n][l]]) / len(runs[n][l]), ts), end='')
+        print("{0:.2f} & ".format(ts / sum([gb.runs[-1].iterations for gb in runs[n][l]]) * len(runs[n][l])), end='')
 
         # mean total runtime
-        print("{0:.2f} ({1:.2f}) \\\\".format(sum([gb.runtime() for gb in runs[n][l]]) / len(runs[n][l]), restarts * tr + ts))
+        print("{0:.2f} \\\\".format((restarts * tr + ts) / sum([gb.runtime() for gb in runs[n][l]]) * len(runs[n][l]) ))
 
