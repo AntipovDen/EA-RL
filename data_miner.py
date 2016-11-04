@@ -39,7 +39,7 @@ class GlobalRun:
     def runtime(self):
         return sum([i.iterations for i in self.runs])
 
-files = ['data/experiment{}.out'.format(i) for i in range(1, 6)]
+files = ['data/experiment{}.out'.format(i) for i in range(1, 11)]
 runs = {n: {n // 2 - 1: [], n // 4: [], 1: []} for n in [10, 20, 100, 1000, 10000]}
 
 for file in files:
@@ -65,7 +65,10 @@ for file in files:
 
 for n in [10, 20, 100, 1000, 10000]:
     for l in [n // 2 - 1, n // 4, 1]:
-        print("{} & {} & ".format(n, l), end='')
+        if l == n // 2 - 1:
+            print("\multirow{{3}}{{*}}{{{}}} & {} & ".format(n, l), end='')
+        else:
+            print(" & {} & ".format(l), end='')
 
         # count mean restarts for each n and l:
         c = 3.85
@@ -104,12 +107,19 @@ for n in [10, 20, 100, 1000, 10000]:
         print("{0:.2f} & ".format(wf * 100/r), end='')
         # print("Phase 3: {}".format(p3 * 100/r))
         tr = 3 * n * (log(l) + 1) / 2 + 5 * n * log((n - l) / (l + 1)) + 3 * n + 4.85 * n * (log(n) + 1)
-        print("{0:.2f} & ".format(tr / s  * r), end='')
+        print("{0:.2f} ({1:.2f})& ".format(s / r, tr), end='')
 
         # count mean number of ierations in the run without restart:
         ts = 5 * n * (log(l) + 1) / 2 + 5 * n * log((n - l) / (l + 1)) + n
-        print("{0:.2f} & ".format(ts / sum([gb.runs[-1].iterations for gb in runs[n][l]]) * len(runs[n][l])), end='')
+        print("{0:.2f} ({1:.2f})& ".format(sum([gb.runs[-1].iterations for gb in runs[n][l]]) / len(runs[n][l]), ts), end='')
 
         # mean total runtime
-        print("{0:.2f} \\\\".format((restarts * tr + ts) / sum([gb.runtime() for gb in runs[n][l]]) * len(runs[n][l]) ))
+        print("{0:.2f} ({1:.2f}) \\\\ ".format(sum([gb.runtime() for gb in runs[n][l]]) / len(runs[n][l]), (restarts * tr + ts)), end='')
 
+        if l == 1:
+            print('\hline')
+        elif n == 10000 and l == 2500:
+            print('\hline')
+            exit(0)
+        else:
+            print('\cline{2-7}')
