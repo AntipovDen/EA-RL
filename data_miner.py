@@ -20,12 +20,12 @@ class Run:
             self.restart = True
             self.last_phase = int(st[1])
             self.iterations = int(st[3])
-            self.last_state = int(st[5])
+            # self.last_state = int(st[5])
             if self.last_phase == 2:
-                if int(st[7]) == 2:
-                    self.reason = TF
-                elif st[-1] == 'wf':
+                if st[-1] == 'wf':
                     self.reason = WF
+                elif int(st[5]) == 2:
+                    self.reason = TF
                 else:
                     self.reason = None
             else:
@@ -39,7 +39,7 @@ class GlobalRun:
     def runtime(self):
         return sum([i.iterations for i in self.runs])
 
-files = ['data/experiment{}.out'.format(i) for i in range(1, 11)]
+files = ['data/experiment{}.out'.format(i) for i in range(11, 19)]
 runs = {n: {n // 2 - 1: [], n // 4: [], 1: []} for n in [10, 20, 100, 1000, 10000]}
 
 for file in files:
@@ -60,11 +60,11 @@ for file in files:
                 if not run.restart:
                     break
             runs[n][l].append(global_run)
-            s = f.readline()
+            # s = f.readline()
 
 
-for n in [10, 20, 100, 1000, 10000]:
-    for l in [n // 2 - 1, n // 4, 1]:
+for n in [10000]:
+    for l in [1]:
         if l == n // 2 - 1:
             print("\multirow{{3}}{{*}}{{{}}} & {} & ".format(n, l), end='')
         else:
