@@ -106,11 +106,11 @@ for n in [10000]:
         # print("Two fal: {}".format(tf * 100/r))
         print("{0:.2f} & ".format(wf * 100/r), end='')
         # print("Phase 3: {}".format(p3 * 100/r))
-        tr = 3 * n * (log(l) + 1) / 2 + 5 * n * log((n - l) / (l + 1)) + 3 * n + 4.85 * n * (log(n) + 1)
+        tr = 3 * n * (log(l + 1) + 1) / 2 + 5 * n * log((n - l - 1) / (l + 1)) + 4 * n + 19 + 4.85 * n * (log(n) + 1)
         print("{0:.2f} ({1:.2f})& ".format(s / r, tr), end='')
 
         # count mean number of ierations in the run without restart:
-        ts = 5 * n * (log(l) + 1) / 2 + 5 * n * log((n - l) / (l + 1)) + n
+        ts = 5 * n * (log(l  + 1) + 1) / 2 + 5 * n * log((n - l - 1) / (l + 1)) + 2 * n + 15
         print("{0:.2f} ({1:.2f})& ".format(sum([gb.runs[-1].iterations for gb in runs[n][l]]) / len(runs[n][l]), ts), end='')
 
         # mean total runtime
