@@ -155,16 +155,16 @@ def run(n, l):
     while not run_without_restarts(n, l):
         ea.clear()
         la.clear()
-        print(t1_1, t1_2, t2, t3)
+        # print(t1_1, t1_2, t2, t3)
         t1_1 = t1_2 = t2 = t3 = 0
 
 
-n = 10000
-l = 1
 
-ea = Evolutionary_algorithm(n, l, lambda om: jump_nl(om, n, l), 4.85 * n * (log(n) + 1))
-la = Learning_agent(n, l)
-for run_number in range(1000):
-    print('n {} l {} r {}'.format(n, l, run_number + 1))
-    run(n, l)
-    print()
+for n in 10, 20, 100, 1000, 10000:
+    for l in range(n // 4, n // 2 - 1):
+        ea = Evolutionary_algorithm(n, l, lambda om: jump_nl(om, n, l), 4.85 * n * (log(n) + 1))
+        la = Learning_agent(n, l)
+        for run_number in range(100):
+            print('n {} l {} r {}'.format(n, l, run_number + 1))
+            run(n, l)
+            print()
