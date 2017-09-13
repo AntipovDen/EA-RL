@@ -64,7 +64,7 @@ class EARL:
     def __init__(self):
         self.evolutionary_algorihm = EvolutionaryAlgorithm(rls_mutation, one_max)
         self.learning_agent = LearningAgent(n + 1, [one_max, zero_max])
-        , self.evolutionary_algorihm.get_state()
+
     def run(self):
         aux_obj = self.learning_agent.recalculate_quality(0, self.evolutionary_algorihm.get_state())
 
