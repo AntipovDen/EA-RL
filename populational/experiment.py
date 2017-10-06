@@ -6,7 +6,7 @@ from sys import argv, stdout
 n = 1000
 alpha = 0.9
 gamma = 0.1
-
+k = 4
 
 class LearningAgent:
     def __init__(self, number_of_states, actions, track_rl=False):
@@ -165,8 +165,6 @@ def zero_max(x):
     return n - x
 
 
-k = 4
-
 
 def xdivk(x):
     return x // k * k
@@ -191,11 +189,19 @@ else:
     except ValueError:
         runs = 100
 
+# n = 20
+# k = 3
+# for _ in range(10):
+#     print(EvolutionaryAlgorithm(rls_mutation, xdivk_mod).run())
+# exit(0)
+
+
 if argv[-1] == 'earl':
     with open('earl_{}.txt'.format(thread_number), 'w') as f:
         f.write('Average runtime of EA+RL on XdivK + OneMax over 100 runs. Lines: k in [2..6]. columns: n in [20..100], step = 10.\n')
-        for k in (2, 7):
+        for k in range(2, 7):
             for n in range(20, 101, 10):
+                print(n , k)
                 f.write('{:.2f} '.format(sum(EARL().run() / runs for _ in range(runs))))
                 f.flush()
             f.write('\n')
@@ -203,8 +209,9 @@ else:
     with open('ea_{}.txt'.format(thread_number), 'w') as f:
         f.write(
             'Average runtime of (2 + 2)-EA on XdivK over 100 runs. Lines: k in [2..6]. columns: n in [20..100], step = 10.\n')
-        for k in (2, 7):
+        for k in range(2, 7):
             for n in range(20, 101, 10):
+                print(n, k)
                 f.write('{:.2f} '.format(sum(EvolutionaryAlgorithm(rls_mutation, xdivk_mod).run() / runs for _ in range(runs))))
                 f.flush()
             f.write('\n')
