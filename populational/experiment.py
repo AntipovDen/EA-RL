@@ -201,7 +201,6 @@ if argv[-1] == 'earl':
         f.write('Average runtime of EA+RL on XdivK + OneMax over 100 runs. Lines: k in [2..6]. columns: n in [20..100], step = 10.\n')
         for k in range(2, 7):
             for n in range(20, 101, 10):
-                print(n , k)
                 f.write('{:.2f} '.format(sum(EARL().run() / runs for _ in range(runs))))
                 f.flush()
             f.write('\n')
@@ -211,7 +210,6 @@ else:
             'Average runtime of (2 + 2)-EA on XdivK over 100 runs. Lines: k in [2..6]. columns: n in [20..100], step = 10.\n')
         for k in range(2, 7):
             for n in range(20, 101, 10):
-                print(n, k)
                 f.write('{:.2f} '.format(sum(EvolutionaryAlgorithm(rls_mutation, xdivk_mod).run() / runs for _ in range(runs))))
                 f.flush()
             f.write('\n')
