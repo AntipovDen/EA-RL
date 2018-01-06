@@ -99,6 +99,16 @@ class EvolutionaryAlgorithm:
                 self.population = sample([x for x in self.population if self.target_objective(x) == max_value], 2)
             iterations += 1
 
+    def run_one_plus_one(self):
+        iterations = 0
+        while True:
+            self.population += [self.mutate(x) for x in self.population]
+            max_value = max(self.target_objective(x) for x in self.population)
+            if max_value == n:
+                return iterations
+            self.population = sample([x for x in self.population if self.target_objective(x) == max_value], 1)
+            iterations += 1
+
 
 class EARL:
     def __init__(self, track_state=False, track_distance=False):
@@ -205,9 +215,9 @@ if argv[-1] == 'earl':
                 f.flush()
             f.write('\n')
 else:
-    with open('ea_{}.txt'.format(thread_number), 'w') as f:
+    with open('ea_opo{}.txt'.format(thread_number), 'w') as f:
         f.write(
-            'Average runtime of (2 + 2)-EA on XdivK over 100 runs. Lines: k in [2..6]. columns: n in [20..100], step = 10.\n')
+            'Average runtime of (1 + 1)-EA on XdivK over 100 runs. Lines: k in [2..6]. columns: n in [20..100], step = 10.\n')
         for k in range(2, 7):
             for n in range(20, 101, 10):
                 f.write('{:.2f} '.format(sum(EvolutionaryAlgorithm(rls_mutation, xdivk_mod).run() / runs for _ in range(runs))))
