@@ -56,7 +56,7 @@ class LearningAgent:
 # calculations much faster
 class EvolutionaryAlgorithm:
     def __init__(self, mutation_operator, target_objective):
-        self.population = [gen_individual(), gen_individual()]
+        self.population = [gen_individual()]#, gen_individual()]
         self.mutate = mutation_operator
         self.target_objective = target_objective
 
@@ -108,6 +108,7 @@ class EvolutionaryAlgorithm:
                 return iterations
             self.population = sample([x for x in self.population if self.target_objective(x) == max_value], 1)
             iterations += 1
+            print(self.population)
 
 
 class EARL:
@@ -220,7 +221,7 @@ else:
             'Average runtime of (1 + 1)-EA on XdivK over 100 runs. Lines: k in [2..6]. columns: n in [20..100], step = 10.\n')
         for k in range(2, 7):
             for n in range(20, 101, 10):
-                f.write('{:.2f} '.format(sum(EvolutionaryAlgorithm(rls_mutation, xdivk_mod).run() / runs for _ in range(runs))))
+                f.write('{:.2f} '.format(sum(EvolutionaryAlgorithm(rls_mutation, xdivk_mod).run_one_plus_one() / runs for _ in range(runs))))
                 f.flush()
             f.write('\n')
 
