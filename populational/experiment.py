@@ -1,6 +1,6 @@
-from math import log
+from math import log, e
 from random import sample, randint
-# from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 from sys import argv, stdout
 
 n = 1000
@@ -8,173 +8,108 @@ alpha = 0.9
 gamma = 0.1
 k = 4
 
+
 class LearningAgent:
-    def __init__(self, number_of_states, actions, track_rl=False):
+    def __init__(self, number_of_states, actions):
         self.Q = [{a: 0 for a in actions} for _ in range(number_of_states)]
         self.state = 0
         self.action = actions[0]
-        # to see, how much learned states there are
-        self.tracking = track_rl
-        if track_rl:
-            self.learning_track = [0]
-        else:
-            self.learning_track = None
 
-    def recalculate_quality(self, r, new_state):
+    def update(self, r, new_state):
         new_q = (1 - alpha) * self.Q[self.state][self.action] + alpha * (r + gamma * max(self.Q[new_state].values()))
-
-        if self.tracking:
-            if self.action == zero_max and new_q < 0 and self.Q[self.state][self.action] >= 0:
-                self.learning_track.append(self.learning_track[-1] + 1)
-            else:
-                self.learning_track.append(self.learning_track[-1])
-
         self.Q[self.state][self.action] = new_q
         self.state = new_state
         max_value = max(self.Q[self.state].values())
         self.action = sample([a for a in self.Q[self.state].keys() if self.Q[self.state][a] == max_value], 1)[0]
         return self.action
 
-    # just for debug purposes
-    def print_q(self):
-        actions = list(self.Q[0].keys())
-        for a in actions:
-            print('{: <10}'.format(a.__name__), end='')
-        print()
-
-        for state in self.Q:
-            for a in actions:
-                print('{:3.5f} '.format(state[a]), end='')
-            print()
-
-    def get_learning_track(self):
-        return self.learning_track
-
 
 # note that we consider individuals not as binary vectors,
 # but as an integer number of ones in this vector, it makes
 # calculations much faster
 class EvolutionaryAlgorithm:
-    def __init__(self, mutation_operator, target_objective):
-        self.population = [gen_individual()]#, gen_individual()]
-        self.mutate = mutation_operator
+    def __init__(self,
+                 initial_population,
+                 target_objective,
+                 mutation_operator,
+                 selection_operator_parents,
+                 selection_operator_next_gen,
+                 population_measure=None,
+                 state_def=None):
+        self.population = initial_population
         self.target_objective = target_objective
+        self.mutate = mutation_operator
+        self.select_parents = selection_operator_parents
+        self.select_next_gen = lambda pop, aux_obj: selection_operator_next_gen(pop, aux_obj, self.target_objective) \
+            if aux_obj is not None else selection_operator_next_gen(pop, self.target_objective)
+        if population_measure is None:
+            self.measure = lambda: sum(self.target_objective(x) for x in self.population) / len(self.population)
+        else:
+            self.measure = population_measure
+        if state_def is None:
+            self.state = lambda: max(self.target_objective(x) for x in self.population)
+        else:
+            self.state = state_def
+        self.pop_measure = self.measure()
 
-    def get_state(self):
-        return max(self.target_objective(x) for x in self.population)
+    def gen_offsprings(self):
+        return [self.mutate(x) for x in self.select_parents(self.population)]
 
-    def get_population(self):
-        return self.population
-
-    def get_distance(self):
-        return max(self.population) - min(self.population)
-
-    def perform_iteration(self, aux_objective):
-        # to calculate reward after the iteration
-        r0 = sum(self.target_objective(x) for x in self.population)
-        # creating children
-        self.population += [self.mutate(x) for x in self.population]
-        # finding the individual with the best auxiliary objective value and moving it into new population
-        max_aux_value = max(aux_objective(x) for x in self.population)
-        next_population = sample([x for x in self.population if aux_objective(x) == max_aux_value], 1)
-        self.population.remove(next_population[0])
-        # finding the individual with the best target objective among individuals that left in the population
-        max_target_value = max(self.target_objective(x) for x in self.population)
-        next_population += sample([x for x in self.population if self.target_objective(x) == max_target_value], 1)
-        self.population = next_population
-        # returning reward and new state
-        return sum(self.target_objective(x) for x in self.population) - r0, max(self.target_objective(x) for x in self.population)
+    def perform_iteration(self, aux_objective=None):
+        self.population = self.select_next_gen(self.population + self.gen_offsprings(), aux_objective)
+        r = self.measure() - self.pop_measure
+        self.pop_measure += r
+        return r, self.state()
 
     def run(self):
+        state = self.state()
         iterations = 0
-        while True:
-            self.population += [self.mutate(x) for x in self.population]
-            max_value = max(self.target_objective(x) for x in self.population)
-            if max_value == n:
-                return iterations
-            if len([x for x in self.population if self.target_objective(x) == max_value]) == 1:
-                second_max = max(self.target_objective(x) for x in self.population if self.target_objective(x) != max_value)
-                self.population = [x for x in self.population if self.target_objective(x) == max_value] + sample([x for x in self.population if self.target_objective(x) == second_max], 1)
-            else:
-                self.population = sample([x for x in self.population if self.target_objective(x) == max_value], 2)
+        while state != n:
+            r, state = self.perform_iteration()
             iterations += 1
-
-    def run_one_plus_one(self):
-        iterations = 0
-        while True:
-            self.population += [self.mutate(x) for x in self.population]
-            max_value = max(self.target_objective(x) for x in self.population)
-            if max_value == n:
-                return iterations
-            self.population = sample([x for x in self.population if self.target_objective(x) == max_value], 1)
-            iterations += 1
-            print(self.population)
+        return iterations
 
 
 class EARL:
-    def __init__(self, track_state=False, track_distance=False):
-        self.evolutionary_algorihm = EvolutionaryAlgorithm(rls_mutation, xdivk_mod)
-        self.learning_agent = LearningAgent(n + 1, [xdivk_mod, one_max])
-        # wether we should track the current state, or just count the number of iterations
-        self.state_tracking = track_state
-        self.distance_tracking = track_distance
+    def __init__(self, ea, rl):
+        self.ea = ea
+        self.rl = rl
 
     def run(self):
-        aux_obj = self.learning_agent.recalculate_quality(0, self.evolutionary_algorihm.get_state())
-        if self.state_tracking:
-            states = []
-        else:
-            iterations = 0
-        if self.distance_tracking:
-            distances = []
-        while True:
-            reward, state = self.evolutionary_algorihm.perform_iteration(aux_obj)
-            if self.state_tracking:
-                states.append(state)
-            else:
-                iterations += 1
-            if self.distance_tracking:
-                distances.append(self.evolutionary_algorihm.get_distance())
-            if state == n:
-                if self.distance_tracking:
-                    if self.state_tracking:
-                        return states, distances
-                    return iterations, distances
-                if self.state_tracking:
-                    return states
-                return iterations
-            aux_obj = self.learning_agent.recalculate_quality(reward, state)
-
-    def get_learning_track(self):
-        return self.learning_agent.get_learning_track()
-
-    def print_q(self):
-        self.learning_agent.print_q()
+        iterations = 0
+        aux_obj = self.rl.update(0, self.ea.state())
+        while self.ea.state() != n:
+            aux_obj = self.rl.update(*self.ea.perform_iteration(aux_obj))
+            iterations += 1
+        return iterations
 
 
+# initial population
+def init_pop(pop_size):
+    return [sum([randint(0, 1) for _ in range(n)]) for _ in range(pop_size)]
 
 
-def gen_individual():
-    s = 0
-    for i in range(n):
-        if randint(0, 1):
-            s += 1
-    return s
-
-
-def rls_mutation(x):
+# mutation operators
+def mutation_rls(x):
     if randint(1, n) <= x:
         return x - 1
     return x + 1
 
 
+def mutation_one_plus_one(x):
+    y = x
+    for i in range(n):
+        y += (randint(1, n) == 1) * (1 - 2 * (i < x))
+    return y
+
+
+# objectives
 def one_max(x):
     return x
 
 
 def zero_max(x):
     return n - x
-
 
 
 def xdivk(x):
@@ -185,6 +120,31 @@ def xdivk(x):
 def xdivk_mod(x):
     return n - k - ((n - x - 1) // k) * k
 
+
+# selectors
+# parent selector for (2 + 2)
+def parent_selector_each_parent(population):
+    return population
+
+
+# offsprings selector for (2 + 2) with auxiliary objectives
+def offspring_selector_one_best_plus_one_best(pop, obj1, obj2):
+    max_obj1 = max(obj1(x) for x in pop)
+    best_obj1_index = sample([i for i in range(len(pop)) if obj1(pop[i]) == max_obj1], 1)[0]
+    max_obj2 = max(obj2(pop[i]) for i in range(len(pop)) if i != best_obj1_index)
+    best_obj2_index = sample([i for i in range(len(pop)) if obj2(pop[i]) == max_obj2 and i != best_obj1_index], 1)[0]
+    return [pop[best_obj1_index], pop[best_obj2_index]]
+
+
+# offspring selector for (2 + 2)-EA without RL
+def offspring_selector_two_best(pop, obj):
+    return offspring_selector_one_best_plus_one_best(pop, obj, obj)
+
+
+# offspring selector for (1 + 1) with auxiliary objectives
+def offspring_selector_one_best(pop, obj1, _=None):
+    max_obj = max(obj1(x) for x in pop)
+    return sample([x for x in pop if obj1(x) == max_obj], 1)
 
 
 if len(argv) <= 1:
@@ -200,30 +160,64 @@ else:
     except ValueError:
         runs = 100
 
-# n = 20
-# k = 3
-# for _ in range(10):
-#     print(EvolutionaryAlgorithm(rls_mutation, xdivk_mod).run())
-# exit(0)
+# with open('earl_opo.txt', 'w') as f:
+#     k = 2
+#     for n in range(20, 101, 10):
+#         res = 0
+#         for _ in range(runs):
+#             ea = EvolutionaryAlgorithm(init_pop(1), xdivk_mod, mutation_rls, parent_selector_each_parent,
+#                                        offspring_selector_one_best)
+#             rl = LearningAgent(n + 1, [xdivk_mod, one_max])
+#             res += EARL(ea, rl).run()
+#         f.write('{} '.format(res / runs))
+
+with open('earl_tpt.txt', 'w') as f:
+    k = 2
+    for n in range(20, 101, 10):
+        res = 0
+        for _ in range(runs):
+            ea = EvolutionaryAlgorithm(init_pop(2), xdivk_mod, mutation_rls, parent_selector_each_parent,
+                                       offspring_selector_one_best_plus_one_best)
+            rl = LearningAgent(n + 1, [xdivk_mod, one_max])
+            res += EARL(ea, rl).run()
+        f.write('{} '.format(res / runs))
+
+with open('ea_opo.txt', 'w') as f:
+    k = 2
+    for n in range(20, 101, 10):
+        res = 0
+        for _ in range(runs):
+            res += EvolutionaryAlgorithm(init_pop(1), xdivk_mod, mutation_rls, parent_selector_each_parent,
+                                         offspring_selector_one_best).run()
+        f.write('{} '.format(res / runs))
 
 
-if argv[-1] == 'earl':
-    with open('earl_{}.txt'.format(thread_number), 'w') as f:
-        f.write('Average runtime of EA+RL on XdivK + OneMax over 100 runs. Lines: k in [2..6]. columns: n in [20..100], step = 10.\n')
-        for k in range(2, 7):
-            for n in range(20, 101, 10):
-                f.write('{:.2f} '.format(sum(EARL().run() / runs for _ in range(runs))))
-                f.flush()
-            f.write('\n')
-else:
-    with open('ea_opo{}.txt'.format(thread_number), 'w') as f:
-        f.write(
-            'Average runtime of (1 + 1)-EA on XdivK over 100 runs. Lines: k in [2..6]. columns: n in [20..100], step = 10.\n')
-        for k in range(2, 7):
-            for n in range(20, 101, 10):
-                f.write('{:.2f} '.format(sum(EvolutionaryAlgorithm(rls_mutation, xdivk_mod).run_one_plus_one() / runs for _ in range(runs))))
-                f.flush()
-            f.write('\n')
+with open('ea_tpt.txt', 'w') as f:
+    k = 2
+    for n in range(20, 101, 10):
+        res = 0
+        for _ in range(runs):
+            res += EvolutionaryAlgorithm(init_pop(2), xdivk_mod, mutation_rls, parent_selector_each_parent,
+                                         offspring_selector_two_best).run()
+        f.write('{} '.format(res / runs))
+
+# if argv[-1] == 'earl':
+#     with open('earl_{}.txt'.format(thread_number), 'w') as f:
+#         f.write('Average runtime of EA+RL on XdivK + OneMax over 100 runs. Lines: k in [2..6]. columns: n in [20..100], step = 10.\n')
+#         for k in range(2, 7):
+#             for n in range(20, 101, 10):
+#                 f.write('{:.2f} '.format(sum(EARL().run() / runs for _ in range(runs))))
+#                 f.flush()
+#             f.write('\n')
+# else:
+#     with open('ea_opo{}.txt'.format(thread_number), 'w') as f:
+#         f.write(
+#             'Average runtime of (1 + 1)-EA on XdivK over 100 runs. Lines: k in [2..6]. columns: n in [20..100], step = 10.\n')
+#         for k in range(2, 7):
+#             for n in range(20, 101, 10):
+#                 f.write('{:.2f} '.format(sum(EvolutionaryAlgorithm(rls_mutation, xdivk_mod).run_one_plus_one() / runs for _ in range(runs))))
+#                 f.flush()
+#             f.write('\n')
 
 
 
