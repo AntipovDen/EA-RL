@@ -146,9 +146,11 @@ def offspring_selector_one_best(pop, obj1, _=None):
     max_obj = max(obj1(x) for x in pop)
     return sample([x for x in pop if obj1(x) == max_obj], 1)
 
-if len(argv) == 1:
+
+if '-h' in argv or '-help' in argv:
     print('Usage: python experiment.py [-t thread_number] [-r number_of_runs] [-a ea|earl|earlmod] [-m rls|sbm] '
           '[-e pop_size] [-p xdk|om|xdkom|xdkomzm|omzm]')
+    exit(0)
 
 if '-t' in argv:
     thread_number = '_' + argv[argv.index('-t') + 1]
