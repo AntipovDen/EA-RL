@@ -146,19 +146,79 @@ def offspring_selector_one_best(pop, obj1, _=None):
     max_obj = max(obj1(x) for x in pop)
     return sample([x for x in pop if obj1(x) == max_obj], 1)
 
+if len(argv) == 1:
+    print('Usage: python experiment.py [-t thread_number] [-r number_of_runs] [-a ea|earl|earlmod] [-m rls|sbm] '
+          '[-e pop_size] [-p xdk|om|xdkom|xdkomzm|omzm]')
 
-if len(argv) <= 1:
+if '-t' in argv:
+    thread_number = '_' + argv[argv.index('-t') + 1]
+else:
     thread_number = ''
-else:
-    thread_number = argv[1]
 
-if len(argv) <= 2:
-    runs = 100
+if '-r' in argv:
+    runs = int(argv[argv.index('-r') + 1])
 else:
-    try:
-        runs = int(argv[2])
-    except ValueError:
-        runs = 100
+    runs = 100
+
+if '-a' in argv:
+    algorithm = argv[argv.index('-a') + 1]
+else:
+    algorithm = 'ea'
+
+if '-m' in argv and argv[argv.index('-m') + 1] == 'sbm':
+    mutation_operator = mutation_one_plus_one
+else:
+    mutation_operator = mutation_rls
+
+if '-e' in argv:
+    pop_size = int(argv[argv.index('-e') + 1])
+else:
+    pop_size = 1
+
+if '-p' in argv:
+    problem = argv[argv.index('-p') + 1]
+else:
+    problem = 'xdk'
+if 'xdk' in problem:
+    target_obj = xdivk_mod  # xdk|om|xdkom|xdkomzm|omzm
+    if 'zm' in problem:
+        aux_obj = [xdivk_mod, one_max, zero_max]
+    elif 'om' in problem:
+        aux_obj = [xdivk_mod, one_max]
+    else:
+        aux_obj = [xdivk_mod]
+else:
+    target_obj = one_max
+    aux_obj = [one_max, zero_max] if 'zm' in problem else [one_max]
+
+if pop_size == 2:
+    if 'rl' in algorithm:
+        offspring_selector = offspring_selector_one_best_plus_one_best
+    else:
+        offspring_selector = offspring_selector_two_best
+else:
+    offspring_selector = offspring_selector_one_best
+
+with open('{}_{}p{}_{}{}.txt'.format(algorithm, pop_size, pop_size, problem, thread_number), 'w') as f:
+    for k in range(2, 5):
+        for n in range(20, 101, 10):
+            if 'rl' in algorithm:
+                f.write('{:.2f} '.format(sum(EARL(EvolutionaryAlgorithm(init_pop(pop_size),
+                                                                        target_obj,
+                                                                        mutation_operator,
+                                                                        parent_selector_each_parent,
+                                                                        offspring_selector),
+                                                  LearningAgent(n + 1, aux_obj)).run() / runs for _ in range(runs))))
+                f.flush()
+            else:
+                f.write('{:.2f} '.format(sum(EvolutionaryAlgorithm(init_pop(pop_size),
+                                                                   target_obj,
+                                                                   mutation_operator,
+                                                                   parent_selector_each_parent,
+                                                                   offspring_selector).run() / runs for _ in range(runs))))
+                f.flush()
+        f.write('\n')
+
 
 # with open('earl_opo.txt', 'w') as f:
 #     k = 2
@@ -171,35 +231,35 @@ else:
 #             res += EARL(ea, rl).run()
 #         f.write('{} '.format(res / runs))
 
-with open('earl_tpt.txt', 'w') as f:
-    k = 2
-    for n in range(20, 101, 10):
-        res = 0
-        for _ in range(runs):
-            ea = EvolutionaryAlgorithm(init_pop(2), xdivk_mod, mutation_rls, parent_selector_each_parent,
-                                       offspring_selector_one_best_plus_one_best)
-            rl = LearningAgent(n + 1, [xdivk_mod, one_max])
-            res += EARL(ea, rl).run()
-        f.write('{} '.format(res / runs))
-
-with open('ea_opo.txt', 'w') as f:
-    k = 2
-    for n in range(20, 101, 10):
-        res = 0
-        for _ in range(runs):
-            res += EvolutionaryAlgorithm(init_pop(1), xdivk_mod, mutation_rls, parent_selector_each_parent,
-                                         offspring_selector_one_best).run()
-        f.write('{} '.format(res / runs))
-
-
-with open('ea_tpt.txt', 'w') as f:
-    k = 2
-    for n in range(20, 101, 10):
-        res = 0
-        for _ in range(runs):
-            res += EvolutionaryAlgorithm(init_pop(2), xdivk_mod, mutation_rls, parent_selector_each_parent,
-                                         offspring_selector_two_best).run()
-        f.write('{} '.format(res / runs))
+# with open('earl_tpt.txt', 'w') as f:
+#     k = 2
+#     for n in range(20, 101, 10):
+#         res = 0
+#         for _ in range(runs):
+#             ea = EvolutionaryAlgorithm(init_pop(2), xdivk_mod, mutation_rls, parent_selector_each_parent,
+#                                        offspring_selector_one_best_plus_one_best)
+#             rl = LearningAgent(n + 1, [xdivk_mod, one_max])
+#             res += EARL(ea, rl).run()
+#         f.write('{} '.format(res / runs))
+#
+# with open('ea_opo.txt', 'w') as f:
+#     k = 2
+#     for n in range(20, 101, 10):
+#         res = 0
+#         for _ in range(runs):
+#             res += EvolutionaryAlgorithm(init_pop(1), xdivk_mod, mutation_rls, parent_selector_each_parent,
+#                                          offspring_selector_one_best).run()
+#         f.write('{} '.format(res / runs))
+#
+#
+# with open('ea_tpt.txt', 'w') as f:
+#     k = 2
+#     for n in range(20, 101, 10):
+#         res = 0
+#         for _ in range(runs):
+#             res += EvolutionaryAlgorithm(init_pop(2), xdivk_mod, mutation_rls, parent_selector_each_parent,
+#                                          offspring_selector_two_best).run()
+#         f.write('{} '.format(res / runs))
 
 # if argv[-1] == 'earl':
 #     with open('earl_{}.txt'.format(thread_number), 'w') as f:
