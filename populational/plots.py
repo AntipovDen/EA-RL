@@ -2,33 +2,6 @@ from matplotlib import pyplot as plt
 from scipy.misc import factorial, comb
 
 
-# merge_files
-def mean_of_arrays(arrays):
-    return " ".join([str(sum(arrays[i][j] for i in range(len(arrays))) / len(arrays)) for j in range(len(arrays[0]))])
-
-
-def mean_of_lines(lines):
-    return mean_of_arrays([[float(x) for x in line.split()] for line in lines])
-
-
-merge_files = False
-if merge_files:
-    for filename in ['ea_opo']:  # , 'earl_', 'ea_opo':
-        with open('data/{}_merged.txt'.format(filename), 'w') as fout:
-            data = []
-            for i in range(1, 5):
-                with open('data/{}{}.txt'.format(filename, i), 'r') as fin:
-                    data.append(fin.readlines())
-
-            lines = len(data[0])
-            for line in range(1, lines):
-                if data[0][line][0] != '#':
-                    # floated_data = [[float(number) for number in data[i][line].split()] for i in range(8)]
-                    # for j in range(len(floated_data[0])):
-                    #     fout.write('{} '.format(sum([floated_data[i][j] for i in range(8)]) / 8))
-                    fout.write(mean_of_lines([data[i][line] for i in range(len(data))]))
-                    fout.write('\n')
-
 
 # Lines: k in [2..6]. columns: n in [20..100], step = 10.
 with open('ea_tpt.txt', 'r') as f:
