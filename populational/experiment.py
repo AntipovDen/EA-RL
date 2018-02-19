@@ -34,6 +34,7 @@ class EvolutionaryAlgorithm:
                  mutation_operator,
                  selection_operator_parents,
                  selection_operator_next_gen,
+                 mod=False,
                  population_measure=None,
                  state_def=None):
         self.population = initial_population
@@ -43,22 +44,25 @@ class EvolutionaryAlgorithm:
         self.select_next_gen = lambda pop, aux_obj: selection_operator_next_gen(pop, aux_obj, self.target_objective) \
             if aux_obj is not None else selection_operator_next_gen(pop, self.target_objective)
         if population_measure is None:
-            self.measure = lambda: sum(self.target_objective(x) for x in self.population) / len(self.population)
+            self.measure = lambda pop: sum(self.target_objective(x) for x in pop) / len(pop)
         else:
             self.measure = population_measure
         if state_def is None:
             self.state = lambda: max(self.target_objective(x) for x in self.population)
         else:
             self.state = state_def
-        self.pop_measure = self.measure()
+        self.pop_measure = self.measure(self.population)
+        self.mod = mod
 
     def gen_offsprings(self):
         return [self.mutate(x) for x in self.select_parents(self.population)]
 
     def perform_iteration(self, aux_objective=None):
-        self.population = self.select_next_gen(self.population + self.gen_offsprings(), aux_objective)
-        r = self.measure() - self.pop_measure
-        self.pop_measure += r
+        pop = self.select_next_gen(self.population + self.gen_offsprings(), aux_objective)
+        r = self.measure(pop) - self.pop_measure
+        if not self.mod or r >= 0:
+            self.population = pop
+            self.pop_measure += r
         return r, self.state()
 
     def run(self):
@@ -209,7 +213,8 @@ with open('{}_{}p{}_{}{}.txt'.format(algorithm, pop_size, pop_size, problem, thr
                                                                         target_obj,
                                                                         mutation_operator,
                                                                         parent_selector_each_parent,
-                                                                        offspring_selector),
+                                                                        offspring_selector,
+                                                                        mod='mod' in algorithm),
                                                   LearningAgent(n + 1, aux_obj)).run() / runs for _ in range(runs))))
                 f.flush()
             else:
