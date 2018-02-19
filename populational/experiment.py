@@ -1,6 +1,6 @@
 from math import log, e
 from random import sample, randint
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 from sys import argv, stdout
 
 n = 1000
@@ -202,7 +202,7 @@ else:
     offspring_selector = offspring_selector_one_best
 
 with open('{}_{}p{}_{}{}.txt'.format(algorithm, pop_size, pop_size, problem, thread_number), 'w') as f:
-    for k in range(2, 5):
+    for k in range(2, 7):
         for n in range(20, 101, 10):
             if 'rl' in algorithm:
                 f.write('{:.2f} '.format(sum(EARL(EvolutionaryAlgorithm(init_pop(pop_size),
