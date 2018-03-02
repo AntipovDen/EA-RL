@@ -1,5 +1,5 @@
-filename = 'earl_1p1_xdkom'
-n = 8  # number of files
+filename = 'ea_1p1_xdk'
+n = 4  # number of files
 
 
 def mean_of_arrays(arrays):
@@ -13,8 +13,8 @@ def mean_of_lines(lines):
 
 with open('data/{}_merged.txt'.format(filename), 'w') as fout:
     data = []
-    for i in range(1, n + 1):
-        with open('data/{}_{}.txt'.format(filename, i), 'r') as fin:
+    for i in range(2, n + 1):
+        with open('data/{}/{}_{}.txt'.format(filename, filename, i), 'r') as fin:
             data.append(fin.readlines())
 
     lines = len(data[0])
