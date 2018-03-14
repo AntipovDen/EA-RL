@@ -34,10 +34,13 @@ class EvolutionaryAlgorithm:
                  mutation_operator,
                  selection_operator_parents,
                  selection_operator_next_gen,
+                 lam=1,  # number of offsprings that we create on every iteration from each parent
                  mod=False,
                  population_measure=None,
                  state_def=None):
         self.population = initial_population
+        self.lam = lam
+        self.offsprings = [None] * (len(initial_population) * lam)
         self.target_objective = target_objective
         self.mutate = mutation_operator
         self.select_parents = selection_operator_parents
@@ -55,7 +58,12 @@ class EvolutionaryAlgorithm:
         self.mod = mod
 
     def gen_offsprings(self):
-        return [self.mutate(x) for x in self.select_parents(self.population)]
+        j = 0
+        for x in self.select_parents(self.population):
+            for i in range(self.lam):
+                self.offsprings[j] = self.mutate(x)
+                j += 1
+        return self.offsprings
 
     def perform_iteration(self, aux_objective=None):
         pop = self.select_next_gen(self.population + self.gen_offsprings(), aux_objective)
@@ -153,7 +161,7 @@ def offspring_selector_one_best(pop, obj1, _=None):
 
 if '-h' in argv or '-help' in argv:
     print('Usage: python experiment.py [-t thread_number] [-r number_of_runs] [-a ea|earl|earlmod] [-m rls|sbm] '
-          '[-e pop_size] [-p xdk|om|xdkom|xdkomzm|omzm]')
+          '[-e pop_size] [-l offsprings_size|n] [-p xdk|om|xdkom|xdkomzm|omzm]')
     exit(0)
 
 if '-t' in argv:
@@ -181,6 +189,16 @@ if '-e' in argv:
 else:
     pop_size = 1
 
+if '-l' in argv:
+    lam = argv[argv.index('-l') + 1]
+    lambda_flag = lam == 'n'
+    if not lambda_flag:
+        lam = int(lam)
+else:
+    lambda_flag = False
+    lam = 1
+
+
 if '-p' in argv:
     problem = argv[argv.index('-p') + 1]
 else:
@@ -205,26 +223,33 @@ if pop_size == 2:
 else:
     offspring_selector = offspring_selector_one_best
 
-with open('{}_{}p{}_{}{}.txt'.format(algorithm, pop_size, pop_size, problem, thread_number), 'w') as f:
+with open('{}_{}p{}_{}{}.log'.format(algorithm, pop_size, str(pop_size) + 'n' if lambda_flag else lam * pop_size,
+                                     problem, thread_number), 'w') as f:
     for k in range(2, 7):
         for n in range(20, 101, 10):
+            f.write('n {} k {}\n'.format(n, k))
+            if lambda_flag:
+                lam = n
             if 'rl' in algorithm:
-                f.write('{:.2f} '.format(sum(EARL(EvolutionaryAlgorithm(init_pop(pop_size),
-                                                                        target_obj,
-                                                                        mutation_operator,
-                                                                        parent_selector_each_parent,
-                                                                        offspring_selector,
-                                                                        mod='mod' in algorithm),
-                                                  LearningAgent(n + 1, aux_obj)).run() / runs for _ in range(runs))))
-                f.flush()
+                for _ in range(runs):
+                    f.write('{}\n'.format(EARL(EvolutionaryAlgorithm(init_pop(pop_size),
+                                                                     target_obj,
+                                                                     mutation_operator,
+                                                                     parent_selector_each_parent,
+                                                                     offspring_selector,
+                                                                     lam,
+                                                                     mod='mod' in algorithm),
+                                               LearningAgent(n + 1, aux_obj)).run()))
+                    f.flush()
             else:
-                f.write('{:.2f} '.format(sum(EvolutionaryAlgorithm(init_pop(pop_size),
-                                                                   target_obj,
-                                                                   mutation_operator,
-                                                                   parent_selector_each_parent,
-                                                                   offspring_selector).run() / runs for _ in range(runs))))
-                f.flush()
-        f.write('\n')
+                for _ in range(runs):
+                    f.write('{}\n'.format(EvolutionaryAlgorithm(init_pop(pop_size),
+                                                                target_obj,
+                                                                mutation_operator,
+                                                                parent_selector_each_parent,
+                                                                offspring_selector,
+                                                                lam).run()))
+                    f.flush()
 
 
 # with open('earl_opo.txt', 'w') as f:
@@ -270,7 +295,8 @@ with open('{}_{}p{}_{}{}.txt'.format(algorithm, pop_size, pop_size, problem, thr
 
 # if argv[-1] == 'earl':
 #     with open('earl_{}.txt'.format(thread_number), 'w') as f:
-#         f.write('Average runtime of EA+RL on XdivK + OneMax over 100 runs. Lines: k in [2..6]. columns: n in [20..100], step = 10.\n')
+#         f.write('Average runtime of EA+RL on XdivK + OneMax over 100 runs.
+# Lines: k in [2..6]. columns: n in [20..100], step = 10.\n')
 #         for k in range(2, 7):
 #             for n in range(20, 101, 10):
 #                 f.write('{:.2f} '.format(sum(EARL().run() / runs for _ in range(runs))))
@@ -279,10 +305,12 @@ with open('{}_{}p{}_{}{}.txt'.format(algorithm, pop_size, pop_size, problem, thr
 # else:
 #     with open('ea_opo{}.txt'.format(thread_number), 'w') as f:
 #         f.write(
-#             'Average runtime of (1 + 1)-EA on XdivK over 100 runs. Lines: k in [2..6]. columns: n in [20..100], step = 10.\n')
+#             'Average runtime of (1 + 1)-EA on XdivK over 100 runs.
+# Lines: k in [2..6]. columns: n in [20..100], step = 10.\n')
 #         for k in range(2, 7):
 #             for n in range(20, 101, 10):
-#                 f.write('{:.2f} '.format(sum(EvolutionaryAlgorithm(rls_mutation, xdivk_mod).run_one_plus_one() / runs for _ in range(runs))))
+#                 f.write('{:.2f} '.format(sum(EvolutionaryAlgorithm(rls_mutation, xdivk_mod).run_one_plus_one() /
+# runs for _ in range(runs))))
 #                 f.flush()
 #             f.write('\n')
 
