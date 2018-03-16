@@ -9,7 +9,7 @@ def mean_of_lines(lines):
     return mean_of_arrays([[float(x) for x in line.split()] for line in lines])
 
 
-for filename in 'earl_1p1_xdkom', 'earl_2p2_xdkom', 'earl_2p2_xdkomzm', 'earl_2p2n_xdkom', 'earl_2p2n_xdkomzm':
+for filename in ['earlmod_1p1_xdkomzm']: #'earl_1p1_xdkom', 'earl_2p2_xdkom', 'earl_2p2_xdkomzm', 'earl_2p2n_xdkom', 'earl_2p2n_xdkomzm':
     n = 8  # number of files
     if merge_logs:
         data = [[] for _ in range(9 * 5)]  # each array for one of nine values of n and one of four values of k
