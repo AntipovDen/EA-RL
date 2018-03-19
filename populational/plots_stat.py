@@ -1,5 +1,6 @@
 from matplotlib import pyplot as plt
-from math import e
+from math import e, pi, sqrt
+from scipy.stats import gaussian_kde
 import numpy as np
 
 
@@ -73,14 +74,34 @@ data1 = [sorted(earl_1p1_xdkom[6][n]) for n in range(20, 101, 10)]
 data2 = [earl_2p2_xdkom[6][n] for n in range(20, 101, 10)]
 data3 = [earl_2p2n_xdkom[6][n] for n in range(20, 101, 10)]
 
-# scale = 10
-# plt.hist(data1[6], bins=list(map(lambda x: e ** (x / scale), range(scale, 20 * scale))))
-# plt.xscale('log')
+# h = 50000
+# const = 1 / (len(data1[6]) * h)
+#
+# def my_gaussian_kde(x):
+#     res = 0
+#     for x_i in data1[6]:
+#         if abs(x - x_i) <= h:
+#            res += 3 / 4 * (1 - ((x - x_i) / h) ** 2)
+#     return const * res
+#
+# kernel = gaussian_kde(data1[6])
+# scale = 200
+# x = [e ** (i / scale) for i in range(100 * scale) if  e ** (i / scale) <= 2 * 10 ** 7]
+# print(x)
+# y = [my_gaussian_kde(i) for i in x]
+# print(y)
+# plt.semilogx(x, y,  'b-')
 # plt.show()
 # exit(0)
 
-plt.violinplot(data1[6], points=800, vert=False)
-plt.xscale('log')
+scale = 10
+plt.hist(data1[6], bins=list(map(lambda x: e ** (x / scale), range(scale, 20 * scale))))
+# plt.xscale('log')
+plt.show()
+exit(0)
+
+plt.violinplot(data1[6], points=800, vert=False, bw_method=0.2)
+# plt.xscale('log')
 plt.show()
 exit(0)
 
