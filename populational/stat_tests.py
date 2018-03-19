@@ -1,14 +1,35 @@
-from scipy.stats import wilcoxon
+from scipy.stats import ranksums, variation
+from math import sqrt
 
-with open('data/earl_2p2n_xdkom_merged.log', 'r') as f:
-    lines = f.readlines()
+const = sqrt(800/799)
 
-# with open('data/earl_2p2n_xdkom_merged.log', 'r') as f:
-#     xdkomzm_lines = f.readlines()
+earl_1p1_xdkom = {}
+earl_2p2_xdkom = {}
+earl_2p2_xdkomzm = {}
+earl_2p2n_xdkom = {}
+earl_2p2n_xdkomzm = {}
+earlmod_1p1_xdkomzm = {}
 
-l1 = [l.split()[:400] for l in lines]
-l2 = [l.split()[400:] for l in lines]
+data = {'earl_1p1_xdkom'        :   earl_1p1_xdkom,
+        'earl_2p2_xdkom'        :   earl_2p2_xdkom,
+        'earl_2p2_xdkomzm'      :   earl_2p2_xdkomzm,
+        'earl_2p2n_xdkom'       :   earl_2p2n_xdkom,
+        'earl_2p2n_xdkomzm'     :   earl_2p2n_xdkomzm,
+        'earlmod_1p1_xdkomzm'   :   earlmod_1p1_xdkomzm}
 
-for i in range(45):
-    print('n {} k {}\t{}'.format((i % 9) * 10 + 20, i // 9 + 2, wilcoxon([int(s) for s in l2[i]],#xdkom_lines[i].split()],
-             [int(s) for s in l1[i]], correction=True).pvalue))# xdkomzm_lines[i].split()]).pvalue))
+for algoname in data.keys():
+    with open('data/{}_merged.log'.format(algoname), 'r') as fin:
+        data[algoname] = {}
+        for k in range(2, 7):
+            data[algoname][k] = {}
+            for n in range(20, 101, 10):
+                data[algoname][k][n] = list(map(int, fin.readline().split()))
+
+for algoname, algo_stats in data.items():
+    print('\n{}'.format(algoname), end='')
+    for k in range(2, 7):
+        print('\nk{}\t'.format(k), end='')
+        # arr = [variation(algo_stats[k][n]) * const * 100 for n in range(20, 101, 10)]
+        # print('{:2.2f} {:2.2f}'.format(min(arr), max(arr)), end='')
+        for n in range(20, 101, 10):
+            print('{:2.2f} '.format(variation(algo_stats[k][n]) * const * 100), end='')
