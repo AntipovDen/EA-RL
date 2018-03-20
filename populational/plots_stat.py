@@ -1,7 +1,19 @@
 from matplotlib import pyplot as plt
-from math import e, pi, sqrt
+from math import e, pi, sqrt, log
 from scipy.stats import gaussian_kde
-import numpy as np
+from numpy import histogram
+
+
+def violin_histogram(data, bins, color, x=0):
+    n, _ = histogram(data, bins=bins)
+    weight = 0.07
+    plt.hist(data,
+             bins=bins,
+             weights=[weight] * len(data),
+             alpha=0.5,
+             color=color,
+             orientation='horizontal',
+             bottom=[x - n_i * weight / 2 for n_i in n])
 
 
 with open('data/earl_1p1_xdkom_merged.log', 'r') as fin:
@@ -45,65 +57,46 @@ with open('data/earlmod_1p1_xdkomzm_merged.log', 'r') as fin:
         earlmod_1p1_xdkomzm[k] = {}
         for n in range(20, 101, 10):
             earlmod_1p1_xdkomzm[k][n] = list(map(int, fin.readline().split()))
-            
 
-# Everything about boxplots was commented
-# for k in range(2, 7):
-#     plt.subplot(229 + k)
-#     shift = -2
-#     bplot = plt.boxplot([earl_1p1_xdkom[k][n] for n in range(20, 101, 10)],
-#                         flierprops=dict(markersize=2),
-#                         patch_artist=True,
-#                         # widths=[0.1] * 9,
-#                         showmeans=True,
-#                         meanprops=dict(marker='o', markeredgecolor='black', markerfacecolor='blue'),
-#                         positions=range(20 + shift, 101 + shift, 10),
-#                         whis=100)
-#     for box in bplot['boxes']:
-#         box.set_facecolor('blue')
-#     plt.plot(range(20 + shift, 101 + shift, 10), [sum(earl_1p1_xdkom[k][n]) / 800 for n in range(20, 101, 10)], 'bo-', label='(1 + 1)-EA, XdivK+OneMax')
-#
-#     plt.yscale('log')
-#     plt.xlabel('$n$, individual size')
-#     plt.ylabel('runtime, iterations')
-#     plt.title('$k = {}$'.format(k))
-#     plt.xticks(range(20, 101, 10), [str(i) for i in range(20, 101, 10)])
-#     plt.xlim(15, 105)
+with open('data/ea_2p2_xdk_merged.txt', 'r') as fin:
+    data4 = list(map(float, fin.readlines()[-1].split()))
 
-data1 = [sorted(earl_1p1_xdkom[6][n]) for n in range(20, 101, 10)]
-data2 = [earl_2p2_xdkom[6][n] for n in range(20, 101, 10)]
-data3 = [earl_2p2n_xdkom[6][n] for n in range(20, 101, 10)]
 
-# h = 50000
-# const = 1 / (len(data1[6]) * h)
+data1 = [earl_1p1_xdkom[6][n] for n in range(20, 101, 10)]
+data2 = [sorted(list(map(lambda x: 2 * x, earl_2p2_xdkom[6][n]))) for n in range(20, 101, 10)]
+data3 = [sorted(list(map(lambda x: x * n, earl_2p2n_xdkom[6][n]))) for n in range(20, 101, 10)]
+
+
+# plt.plot(range(800), data3[6], 'bo')
+# worst = 1
+# plt.plot(range(20, 101, 10), [sum(d[-worst:])/worst for d in data2], 'bo-')
+# plt.plot(range(20, 101, 10), data4, 'ro-')
+# plt.yscale('log')
 #
-# def my_gaussian_kde(x):
-#     res = 0
-#     for x_i in data1[6]:
-#         if abs(x - x_i) <= h:
-#            res += 3 / 4 * (1 - ((x - x_i) / h) ** 2)
-#     return const * res
-#
-# kernel = gaussian_kde(data1[6])
-# scale = 200
-# x = [e ** (i / scale) for i in range(100 * scale) if  e ** (i / scale) <= 2 * 10 ** 7]
-# print(x)
-# y = [my_gaussian_kde(i) for i in x]
-# print(y)
-# plt.semilogx(x, y,  'b-')
 # plt.show()
 # exit(0)
 
-scale = 10
-plt.hist(data1[6], bins=list(map(lambda x: e ** (x / scale), range(scale, 20 * scale))))
-# plt.xscale('log')
+scale = 5
+for i in range(9):
+    violin_histogram(data3[i],
+                     color='green',
+                     bins=[2 ** (i / scale) for i in range(scale * int(log(max(data3[6]), 2) + 2))],
+                     x=i * 10 + 20)
+    violin_histogram(data2[i],
+                     color='red',
+                     bins=[2 ** (i / scale) for i in range(scale * int(log(max(data2[6]), 2) + 2))],
+                     x=i * 10 + 20)
+    violin_histogram(data1[i],
+                     color='blue',
+                     bins=[2 ** (i / scale) for i in range(scale * int(log(max(data1[6]), 2) + 2))],
+                     x=i * 10 + 20)
+plt.plot(range(20, 101, 10), [sum(data1[i]) / len(data1[i]) for i in range(len(data1))], 'bo-')
+plt.plot(range(20, 101, 10), [sum(data2[i]) / len(data2[i]) for i in range(len(data2))], 'ro-')
+plt.plot(range(20, 101, 10), [sum(data3[i]) / len(data3[i]) for i in range(len(data3))], 'go-')
+plt.yscale('log')
 plt.show()
 exit(0)
 
-plt.violinplot(data1[6], points=800, vert=False, bw_method=0.2)
-# plt.xscale('log')
-plt.show()
-exit(0)
 
 parts = plt.violinplot(data1, showmeans=True, showextrema=True, points=800, bw_method=0.5)
 for p in parts['bodies']:
@@ -115,25 +108,25 @@ parts['cmins'].set_color('red')
 parts['cmaxes'].set_color('red')
 parts['cbars'].set_color('red')
 
-# parts = plt.violinplot(data2, showmeans=True, showextrema=True)
-# for p in parts['bodies']:
-#     p.set_facecolor('blue')
-#     p.set_alpha(0.2)
-#     p.set_linewidths(10)
-# parts['cmeans'].set_color('blue')
-# parts['cmins'].set_color('blue')
-# parts['cmaxes'].set_color('blue')
-# parts['cbars'].set_color('blue')
-#
-# parts = plt.violinplot(data3, showmeans=True, showextrema=True, positions=list(map(lambda x: x + 1, range(9))))
-# for p in parts['bodies']:
-#     p.set_facecolor('green')
-#     p.set_alpha(0.2)
-#     p.set_linewidths(10)
-# parts['cmeans'].set_color('green')
-# parts['cmins'].set_color('green')
-# parts['cmaxes'].set_color('green')
-# parts['cbars'].set_color('green')
+parts = plt.violinplot(data2, showmeans=True, showextrema=True)
+for p in parts['bodies']:
+    p.set_facecolor('blue')
+    p.set_alpha(0.2)
+    p.set_linewidths(10)
+parts['cmeans'].set_color('blue')
+parts['cmins'].set_color('blue')
+parts['cmaxes'].set_color('blue')
+parts['cbars'].set_color('blue')
+
+parts = plt.violinplot(data3, showmeans=True, showextrema=True, positions=list(map(lambda x: x + 1, range(9))))
+for p in parts['bodies']:
+    p.set_facecolor('green')
+    p.set_alpha(0.2)
+    p.set_linewidths(10)
+parts['cmeans'].set_color('green')
+parts['cmins'].set_color('green')
+parts['cmaxes'].set_color('green')
+parts['cbars'].set_color('green')
 
 plt.yscale('log')
 plt.xticks(range(1, 10), [str(i) for i in range(20, 101, 10)])
