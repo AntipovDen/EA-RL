@@ -3,10 +3,10 @@ from random import sample, randint
 # from matplotlib import pyplot as plt
 from sys import argv, stdout
 
-n = 1000
+n = 60
 alpha = 0.9
 gamma = 0.1
-k = 4
+k = 5
 
 
 class LearningAgent:
@@ -16,7 +16,8 @@ class LearningAgent:
         self.action = actions[0]
 
     def update(self, r, new_state):
-        new_q = (1 - alpha) * self.Q[self.state][self.action] + alpha * (r + gamma * max(self.Q[new_state].values()))
+        # We should multiply Q by (1 - alpha) factor, however we do not do it to avoid oblivion
+        new_q = self.Q[self.state][self.action] + alpha * (r + gamma * max(self.Q[new_state].values()))
         self.Q[self.state][self.action] = new_q
         self.state = new_state
         max_value = max(self.Q[self.state].values())
@@ -95,6 +96,36 @@ class EARL:
             iterations += 1
         return iterations
 
+    def tracked_run(self):
+        target_values = {xdivk_mod(x) for x in range(n)}
+        plateau_runtimes = {x: 0 for x in target_values}
+        plateau_learning = {x: None for x in target_values}
+        aux_obj = self.rl.update(0, self.ea.state())
+
+        current_plateau = self.ea.state()
+        current_plateau_learned = False
+
+        while current_plateau != n:
+            aux_obj = self.rl.update(*self.ea.perform_iteration(aux_obj))
+            plateau_runtimes[current_plateau] += 1
+            if not current_plateau_learned:
+                if max(map(abs, self.rl.Q[current_plateau].values())) > 0 and current_plateau == self.ea.state():
+                    plateau_learning[current_plateau] = [obj.__name__ for obj, q in self.rl.Q[current_plateau].items() if q > 0]
+                    current_plateau_learned = True
+            else:
+                if max(map(abs, self.rl.Q[current_plateau].values())) == 0 and plateau_learning[current_plateau][-1] != 'OBLIVION':
+                    plateau_learning[current_plateau].append('OBLIVION')
+
+            if self.ea.state() > current_plateau:
+                current_plateau_learned = False
+                current_plateau = self.ea.state()
+
+        # for plateau in sorted(list(target_values)):
+        #     print('{}\t{}\t{}'.format(plateau, plateau_runtimes[plateau], plateau_learning[plateau]))
+
+        return plateau_runtimes, plateau_learning
+
+
 
 # initial population
 def init_pop(pop_size):
@@ -157,6 +188,34 @@ def offspring_selector_two_best(pop, obj):
 def offspring_selector_one_best(pop, obj1, _=None):
     max_obj = max(obj1(x) for x in pop)
     return sample([x for x in pop if obj1(x) == max_obj], 1)
+
+# runs = 100
+# for k in range(6, 7):
+#     for n in range(80, 101, 10):
+#         target_values = {xdivk_mod(x) for x in range(n)}
+#         plateau_runtimes = {x: {'None': 0, 'xdivk_mod': 0, 'one_max': 0, 'xdivk_mod_OBLIVION': 0, 'one_max_OBLIVION': 0} for x in target_values}
+#         plateau_learning = {x: {'None': 0, 'xdivk_mod': 0, 'one_max': 0, 'xdivk_mod_OBLIVION': 0, 'one_max_OBLIVION': 0} for x in target_values}
+#
+#         for _ in range(runs):
+#             res_runtimes, res_learnings = EARL(EvolutionaryAlgorithm(init_pop(2),
+#                                                                      xdivk_mod,
+#                                                                      mutation_rls,
+#                                                                      parent_selector_each_parent,
+#                                                                      offspring_selector_one_best_plus_one_best,
+#                                                                      lam=2,
+#                                                                      mod=False),
+#                                                LearningAgent(n + 1, [xdivk_mod, one_max])).tracked_run()
+#             for x in target_values:
+#                 result = 'None' if res_learnings[x] is None else '_'.join(res_learnings[x])
+#                 plateau_runtimes[x][result] += res_runtimes[x]
+#                 plateau_learning[x][result] += 1
+#         for x in target_values:
+#             for key in plateau_runtimes[x].keys():
+#                 plateau_runtimes[x][key] /= max(1, plateau_learning[x][key])
+#
+#         for plateau in sorted(list(target_values)):
+#             print('{}\n{}\n{}'.format(plateau, plateau_runtimes[plateau], plateau_learning[plateau]))
+# exit(0)
 
 
 if '-h' in argv or '-help' in argv:
@@ -250,70 +309,4 @@ with open('{}_{}p{}_{}{}.log'.format(algorithm, pop_size, str(pop_size) + 'n' if
                                                                 offspring_selector,
                                                                 lam).run()))
                     f.flush()
-
-
-# with open('earl_opo.txt', 'w') as f:
-#     k = 2
-#     for n in range(20, 101, 10):
-#         res = 0
-#         for _ in range(runs):
-#             ea = EvolutionaryAlgorithm(init_pop(1), xdivk_mod, mutation_rls, parent_selector_each_parent,
-#                                        offspring_selector_one_best)
-#             rl = LearningAgent(n + 1, [xdivk_mod, one_max])
-#             res += EARL(ea, rl).run()
-#         f.write('{} '.format(res / runs))
-
-# with open('earl_tpt.txt', 'w') as f:
-#     k = 2
-#     for n in range(20, 101, 10):
-#         res = 0
-#         for _ in range(runs):
-#             ea = EvolutionaryAlgorithm(init_pop(2), xdivk_mod, mutation_rls, parent_selector_each_parent,
-#                                        offspring_selector_one_best_plus_one_best)
-#             rl = LearningAgent(n + 1, [xdivk_mod, one_max])
-#             res += EARL(ea, rl).run()
-#         f.write('{} '.format(res / runs))
-#
-# with open('ea_opo.txt', 'w') as f:
-#     k = 2
-#     for n in range(20, 101, 10):
-#         res = 0
-#         for _ in range(runs):
-#             res += EvolutionaryAlgorithm(init_pop(1), xdivk_mod, mutation_rls, parent_selector_each_parent,
-#                                          offspring_selector_one_best).run()
-#         f.write('{} '.format(res / runs))
-#
-#
-# with open('ea_tpt.txt', 'w') as f:
-#     k = 2
-#     for n in range(20, 101, 10):
-#         res = 0
-#         for _ in range(runs):
-#             res += EvolutionaryAlgorithm(init_pop(2), xdivk_mod, mutation_rls, parent_selector_each_parent,
-#                                          offspring_selector_two_best).run()
-#         f.write('{} '.format(res / runs))
-
-# if argv[-1] == 'earl':
-#     with open('earl_{}.txt'.format(thread_number), 'w') as f:
-#         f.write('Average runtime of EA+RL on XdivK + OneMax over 100 runs.
-# Lines: k in [2..6]. columns: n in [20..100], step = 10.\n')
-#         for k in range(2, 7):
-#             for n in range(20, 101, 10):
-#                 f.write('{:.2f} '.format(sum(EARL().run() / runs for _ in range(runs))))
-#                 f.flush()
-#             f.write('\n')
-# else:
-#     with open('ea_opo{}.txt'.format(thread_number), 'w') as f:
-#         f.write(
-#             'Average runtime of (1 + 1)-EA on XdivK over 100 runs.
-# Lines: k in [2..6]. columns: n in [20..100], step = 10.\n')
-#         for k in range(2, 7):
-#             for n in range(20, 101, 10):
-#                 f.write('{:.2f} '.format(sum(EvolutionaryAlgorithm(rls_mutation, xdivk_mod).run_one_plus_one() /
-# runs for _ in range(runs))))
-#                 f.flush()
-#             f.write('\n')
-
-
-
 
