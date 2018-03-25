@@ -82,16 +82,16 @@ for i in range(9):
                      color='green',
                      bins=[2 ** (i / scale) for i in range(scale * int(log(max(data3[6]), 2) + 2))],
                      x=i * 10 + 20)
-    violin_histogram(data2[i],
-                     color='red',
-                     bins=[2 ** (i / scale) for i in range(scale * int(log(max(data2[6]), 2) + 2))],
-                     x=i * 10 + 20)
-    violin_histogram(data1[i],
-                     color='blue',
-                     bins=[2 ** (i / scale) for i in range(scale * int(log(max(data1[6]), 2) + 2))],
-                     x=i * 10 + 20)
-plt.plot(range(20, 101, 10), [sum(data1[i]) / len(data1[i]) for i in range(len(data1))], 'bo-')
-plt.plot(range(20, 101, 10), [sum(data2[i]) / len(data2[i]) for i in range(len(data2))], 'ro-')
+    # violin_histogram(data2[i],
+    #                  color='red',
+    #                  bins=[2 ** (i / scale) for i in range(scale * int(log(max(data2[6]), 2) + 2))],
+    #                  x=i * 10 + 20)
+    # violin_histogram(data1[i],
+    #                  color='blue',
+    #                  bins=[2 ** (i / scale) for i in range(scale * int(log(max(data1[6]), 2) + 2))],
+    #                  x=i * 10 + 20)
+# plt.plot(range(20, 101, 10), [sum(data1[i]) / len(data1[i]) for i in range(len(data1))], 'bo-')
+# plt.plot(range(20, 101, 10), [sum(data2[i]) / len(data2[i]) for i in range(len(data2))], 'ro-')
 plt.plot(range(20, 101, 10), [sum(data3[i]) / len(data3[i]) for i in range(len(data3))], 'go-')
 plt.yscale('log')
 plt.show()
