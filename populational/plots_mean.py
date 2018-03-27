@@ -29,8 +29,8 @@ with open('data/earl_2p2n_xdkom_merged.txt', 'r') as f:
 with open('data/earl_2p2n_xdkomzm_merged.txt', 'r') as f:
     earl_2p2n_xdkomzm = [[float(s) for s in line.split()] for line in f.readlines()]
 
-earl_2p2n_xdkom_theory = [[((2 * e / (e - 1)) ** k / (2 * k) + 1) * n for n in range(20, 101, 10)] for k in range(2, 7)]
-earl_2p2n_xdkomzm_theory = [[((3 * e / (e - 1)) ** k / (2 * k) + 1) * n for n in range(20, 101, 10)] for k in range(2, 7)]
+earl_2p2n_xdkom_theory = [[((2 * e / (e - 1)) ** k / (2 * k) + 1 + 450/k) * n for n in range(20, 101, 10)] for k in range(2, 7)]
+earl_2p2n_xdkomzm_theory = [[((3 * e / (e - 1)) ** k / (2 * k) + 1 + 900/k) * n for n in range(20, 101, 10)] for k in range(2, 7)]
 
 n_range = list(range(20, 101, 10))
 
@@ -89,22 +89,22 @@ for with_zm in True, False:
 
         if not with_zm:
             plt.semilogy(n_range, earl_1p1_xdkom[k - 2], 'g^-',
-                         label='$(1 + 1)$-EA+RL XdivK+OneMax')
+                         label='$(1 + 1)$-EA+RL')
             plt.semilogy(n_range, list(map(lambda x: x * 2, earl_2p2_xdkom[k - 2])), 'yv-',
-                         label='$(2 + 2)$-EA+RL XdivK+OneMax')
+                         label='$(2 + 2)$-EA+RL')
             plt.semilogy(n_range, list(map(lambda x, y: 2 * x * y, earl_2p2n_xdkom[k - 2], n_range)), 'cd-',
-                         label='$(2 + 2n)$-EA+RL XdivK+OneMax')
+                         label='$(2 + 2n)$-EA+RL')
             plt.semilogy(n_range, list(map(lambda x, y: 2 * x * y, earl_2p2n_xdkom_theory[k - 2], n_range)), 'mx--',
-                         label='$(2 + 2n)$-EA+RL XdivK+OneMax (theory)')
+                         label='$(2 + 2n)$-EA+RL (theory)')
         else:
             plt.semilogy(n_range, earlmod_1p1_xdkomzm[k - 2], 'g^-',
-                         label='modif. $(1 + 1)$-EA+RL XdivK+OneMax+ZeroMax')
+                         label='modif. $(1 + 1)$-EA+RL')
             plt.semilogy(n_range, list(map(lambda x: x * 2, earl_2p2_xdkomzm[k - 2])), 'yv-',
-                         label='$(2 + 2)$-EA+RL XdivK+OneMax+ZeroMax')
+                         label='$(2 + 2)$-EA+RL')
             plt.semilogy(n_range, list(map(lambda x, y: 2 * x * y, earl_2p2n_xdkomzm[k - 2], n_range)), 'cd-',
-                         label='$(2 + 2n)$-EA+RL XdivK+OneMax+ZeroMax')
+                         label='$(2 + 2n)$-EA+RL')
             plt.semilogy(n_range, list(map(lambda x, y: 2 * x * y, earl_2p2n_xdkomzm_theory[k - 2], n_range)), 'mx--',
-                         label='$(2 + 2n)$-EA+RL XdivK+OneMax+ZeroMax (theory)')
+                         label='$(2 + 2n)$-EA+RL (theory)')
 
         plt.xlabel('$n$, individual size')
         plt.ylabel('runtime,\nfitness evaluations')
