@@ -97,9 +97,7 @@ for i in range(9):
                      color='blue',
                      bins=[2 ** (i / scale) for i in range(scale * int(log(max(earl_1p1_xdkom[6]), 2) + 2))],
                      x=i * 10 + 20)
-# plt.plot(range(20, 101, 10), [sum(earl_1p1_xdkom[i]) / len(earl_1p1_xdkom[i]) for i in range(len(earl_1p1_xdkom))], 'bo-')
-# plt.plot(range(20, 101, 10), [sum(earl_2p2_xdkom[i]) / len(earl_2p2_xdkom[i]) for i in range(len(earl_2p2_xdkom))], 'ro-')
-# plt.plot(range(20, 101, 10), [sum(earl_2p2n_xdkom[i]) / len(earl_2p2n_xdkom[i]) for i in range(len(earl_2p2n_xdkom))], 'go-')
+
 plt.yscale('log')
 plt.xlim(15, 108)
 plt.ylim(ymin=10)

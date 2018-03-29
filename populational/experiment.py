@@ -17,7 +17,7 @@ class LearningAgent:
 
     def update(self, r, new_state):
         # We should multiply Q by (1 - alpha) factor, however we do not do it to avoid oblivion
-        new_q = self.Q[self.state][self.action] + alpha * (r + gamma * max(self.Q[new_state].values()))
+        new_q = (1 - alpha) * self.Q[self.state][self.action] + alpha * (r + gamma * max(self.Q[new_state].values()))
         self.Q[self.state][self.action] = new_q
         self.state = new_state
         max_value = max(self.Q[self.state].values())
@@ -125,6 +125,27 @@ class EARL:
 
         return plateau_runtimes, plateau_learning
 
+    def logged_run(self, file):
+        iterations = 0
+        aux_obj = self.rl.update(0, self.ea.state())
+        current_state = self.ea.state()
+
+        while current_state != n:
+            file.write('iteration:  {}\n'.format(iterations))
+            file.write('parents:    {} {}\n'.format(*self.ea.population))
+            file.write('objective:  {}\n'.format(aux_obj.__name__))
+            file.write('Q:          {}\n'.format(' '.join(['{}--{}'.format(f.__name__, q) for f, q in self.rl.Q[self.ea.state()].items()])))
+            aux_obj = self.rl.update(*self.ea.perform_iteration(aux_obj))
+            file.write('offsprings: {}\n'.format(sorted(self.ea.offsprings)))
+            if current_state != self.ea.state():
+                file.write(''.join(['-'] * 100))
+                file.write('\n')
+                current_state = self.ea.state()
+            else:
+                file.write('\n')
+            iterations += 1
+
+
 
 
 # initial population
@@ -189,33 +210,51 @@ def offspring_selector_one_best(pop, obj1, _=None):
     max_obj = max(obj1(x) for x in pop)
     return sample([x for x in pop if obj1(x) == max_obj], 1)
 
-# runs = 100
-# for k in range(6, 7):
-#     for n in range(80, 101, 10):
-#         target_values = {xdivk_mod(x) for x in range(n)}
-#         plateau_runtimes = {x: {'None': 0, 'xdivk_mod': 0, 'one_max': 0, 'xdivk_mod_OBLIVION': 0, 'one_max_OBLIVION': 0} for x in target_values}
-#         plateau_learning = {x: {'None': 0, 'xdivk_mod': 0, 'one_max': 0, 'xdivk_mod_OBLIVION': 0, 'one_max_OBLIVION': 0} for x in target_values}
-#
-#         for _ in range(runs):
-#             res_runtimes, res_learnings = EARL(EvolutionaryAlgorithm(init_pop(2),
-#                                                                      xdivk_mod,
-#                                                                      mutation_rls,
-#                                                                      parent_selector_each_parent,
-#                                                                      offspring_selector_one_best_plus_one_best,
-#                                                                      lam=2,
-#                                                                      mod=False),
-#                                                LearningAgent(n + 1, [xdivk_mod, one_max])).tracked_run()
-#             for x in target_values:
-#                 result = 'None' if res_learnings[x] is None else '_'.join(res_learnings[x])
-#                 plateau_runtimes[x][result] += res_runtimes[x]
-#                 plateau_learning[x][result] += 1
-#         for x in target_values:
-#             for key in plateau_runtimes[x].keys():
-#                 plateau_runtimes[x][key] /= max(1, plateau_learning[x][key])
-#
-#         for plateau in sorted(list(target_values)):
-#             print('{}\n{}\n{}'.format(plateau, plateau_runtimes[plateau], plateau_learning[plateau]))
-# exit(0)
+n = 80
+k = 6
+with open('earl_2p2n_xdkom_run.log', 'w') as f:
+    EARL(EvolutionaryAlgorithm(init_pop(2),
+                               xdivk_mod,
+                               mutation_rls,
+                               parent_selector_each_parent,
+                               offspring_selector_one_best_plus_one_best,
+                               lam=n,
+                               mod=False),
+         LearningAgent(n + 1, [xdivk_mod, one_max])).logged_run(f)
+exit()
+
+runs = 1000
+for k in range(2, 7):
+    for n in range(80, 81, 10):
+        target_values = {xdivk_mod(x) for x in range(n)}
+        plateau_runtimes = {x: {'None': 0, 'xdivk_mod': 0, 'one_max': 0, 'xdivk_mod_OBLIVION': 0, 'one_max_OBLIVION': 0} for x in target_values}
+        plateau_learning = {x: {'None': 0, 'xdivk_mod': 0, 'one_max': 0, 'xdivk_mod_OBLIVION': 0, 'one_max_OBLIVION': 0} for x in target_values}
+
+        for _ in range(runs):
+            res_runtimes, res_learnings = EARL(EvolutionaryAlgorithm(init_pop(2),
+                                                                     xdivk_mod,
+                                                                     mutation_rls,
+                                                                     parent_selector_each_parent,
+                                                                     offspring_selector_one_best_plus_one_best,
+                                                                     lam=n,
+                                                                     mod=False),
+                                               LearningAgent(n + 1, [xdivk_mod, one_max])).tracked_run()
+            for x in target_values:
+                result = 'None' if res_learnings[x] is None else '_'.join(res_learnings[x])
+                plateau_runtimes[x][result] += res_runtimes[x]
+                plateau_learning[x][result] += 1
+        for x in target_values:
+            for key in plateau_runtimes[x].keys():
+                plateau_runtimes[x][key] /= max(1, plateau_learning[x][key])
+
+        objectives = list(plateau_runtimes[n - k].keys())
+        print('Plateau ' + ''.join([s.ljust(20) for s in objectives]))
+        for plateau in sorted(list(target_values)):
+            print(str(plateau).ljust(8), end='')
+            for obj in objectives:
+                print('{}{}'.format('{:.2f}'.format(plateau_runtimes[plateau][obj]).ljust(12), str(plateau_learning[plateau][obj]).ljust((8))), end='')
+            print()
+exit(0)
 
 
 if '-h' in argv or '-help' in argv:
