@@ -93,22 +93,22 @@ for with_zm in True, False:
                      label='$(2 + 2)$-EA')
 
         if not with_zm:
-            plt.semilogy(n_range, earl_1p1_xdkom[-1], 'g^-',
+            plt.semilogy(n_range, earl_1p1_xdkom[k - 2], 'g^-',
                          label='$(1 + 1)$-EA+RL')
-            plt.semilogy(n_range, list(map(lambda x: x * 2, earl_2p2_xdkom[-1])), 'yv-',
+            plt.semilogy(n_range, list(map(lambda x: x * 2, earl_2p2_xdkom[k - 2])), 'yv-',
                          label='$(2 + 2)$-EA+RL')
-            plt.semilogy(n_range, list(map(lambda x, y: 2 * x * y, earl_2p2n_xdkom[-1], n_range)), 'cd-',
+            plt.semilogy(n_range, list(map(lambda x, y: 2 * x * y, earl_2p2n_xdkom[k - 2], n_range)), 'cd-',
                          label='$(2 + 2n)$-EA+RL')
-            plt.semilogy(n_range, list(map(lambda x, y: 2 * x * y, earl_2p2n_xdkom_theory[-1], n_range)), 'mx--',
+            plt.semilogy(n_range, list(map(lambda x, y: 2 * x * y, earl_2p2n_xdkom_theory[k - 2], n_range)), 'mx--',
                          label='$(2 + 2n)$-EA+RL (theory)')
         else:
-            plt.semilogy(n_range, earlmod_1p1_xdkomzm[-1], 'g^-',
+            plt.semilogy(n_range, earlmod_1p1_xdkomzm[k - 2], 'g^-',
                          label='modif. $(1 + 1)$-EA+RL')
-            plt.semilogy(n_range, list(map(lambda x: x * 2, earl_2p2_xdkomzm[-1])), 'yv-',
+            plt.semilogy(n_range, list(map(lambda x: x * 2, earl_2p2_xdkomzm[k - 2])), 'yv-',
                          label='$(2 + 2)$-EA+RL')
-            plt.semilogy(n_range, list(map(lambda x, y: 2 * x * y, earl_2p2n_xdkomzm[-1], n_range)), 'cd-',
+            plt.semilogy(n_range, list(map(lambda x, y: 2 * x * y, earl_2p2n_xdkomzm[k - 2], n_range)), 'cd-',
                          label='$(2 + 2n)$-EA+RL')
-            plt.semilogy(n_range, list(map(lambda x, y: 2 * x * y, earl_2p2n_xdkomzm_theory[-1], n_range)), 'mx--',
+            plt.semilogy(n_range, list(map(lambda x, y: 2 * x * y, earl_2p2n_xdkomzm_theory[k - 2], n_range)), 'mx--',
                          label='$(2 + 2n)$-EA+RL (theory)')
 
         plt.xlabel('$n$, individual size')
