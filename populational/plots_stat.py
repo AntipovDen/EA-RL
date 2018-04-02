@@ -72,30 +72,30 @@ with open('data/ea_2p2_xdk_merged.txt', 'r') as fin:
     data4 = list(map(float, fin.readlines()[-1].split()))
 
 
-earl_1p1_xdkom = [earl_1p1_xdkom[6][n] for n in range(20, 101, 10)]
-earl_2p2_xdkom = [sorted(list(map(lambda x: 2 * x, earl_2p2_xdkom[6][n]))) for n in range(20, 101, 10)]
-earl_2p2n_xdkom = [sorted(list(map(lambda x: x * n, earl_2p2n_xdkom[6][n]))) for n in range(20, 101, 10)]
+earl_1p1_xdkom_plot = [earl_1p1_xdkom[6][n] for n in range(20, 101, 10)]
+earl_2p2_xdkom_plot = [sorted(list(map(lambda x: 2 * x, earl_2p2_xdkom[6][n]))) for n in range(20, 101, 10)]
+earl_2p2n_xdkom_plot = [sorted(list(map(lambda x: x * n, earl_2p2n_xdkom[6][n]))) for n in range(20, 101, 10)]
 
-earlmod_1p1_xdkomzm = [earlmod_1p1_xdkomzm[6][n] for n in range(20, 101, 10)]
-earl_2p2_xdkomzm = [sorted(list(map(lambda x: 2 * x, earl_2p2_xdkomzm[6][n]))) for n in range(20, 101, 10)]
-earl_2p2n_xdkomzm = [sorted(list(map(lambda x: x * n, earl_2p2n_xdkomzm[6][n]))) for n in range(20, 101, 10)]
+earlmod_1p1_xdkomzm_plot = [earlmod_1p1_xdkomzm[6][n] for n in range(20, 101, 10)]
+earl_2p2_xdkomzm_plot = [sorted(list(map(lambda x: 2 * x, earl_2p2_xdkomzm[6][n]))) for n in range(20, 101, 10)]
+earl_2p2n_xdkomzm_plot = [sorted(list(map(lambda x: x * n, earl_2p2n_xdkomzm[6][n]))) for n in range(20, 101, 10)]
 
 
 
 scale = 5
 plt.subplot(121)
 for i in range(9):
-    violin_histogram(earl_2p2n_xdkom[i],
+    violin_histogram(earl_2p2n_xdkom_plot[i],
                      color='green',
-                     bins=[2 ** (i / scale) for i in range(scale * int(log(max(earl_2p2n_xdkom[6]), 2) + 2))],
+                     bins=[2 ** (i / scale) for i in range(scale * int(log(max(earl_2p2n_xdkom_plot[6]), 2) + 2))],
                      x=i * 10 + 20)
-    violin_histogram(earl_2p2_xdkom[i],
+    violin_histogram(earl_2p2_xdkom_plot[i],
                      color='red',
-                     bins=[2 ** (i / scale) for i in range(scale * int(log(max(earl_2p2_xdkom[6]), 2) + 2))],
+                     bins=[2 ** (i / scale) for i in range(scale * int(log(max(earl_2p2_xdkom_plot[6]), 2) + 2))],
                      x=i * 10 + 20)
-    violin_histogram(earl_1p1_xdkom[i],
+    violin_histogram(earl_1p1_xdkom_plot[i],
                      color='blue',
-                     bins=[2 ** (i / scale) for i in range(scale * int(log(max(earl_1p1_xdkom[6]), 2) + 2))],
+                     bins=[2 ** (i / scale) for i in range(scale * int(log(max(earl_1p1_xdkom_plot[6]), 2) + 2))],
                      x=i * 10 + 20)
 
 plt.yscale('log')
@@ -108,19 +108,19 @@ plt.title('XdivK+OneMax')
 scale = 5
 plt.subplot(122)
 for i in range(9):
-    violin_histogram(earl_2p2n_xdkomzm[i],
+    violin_histogram(earl_2p2n_xdkomzm_plot[i],
                      color='green',
-                     bins=[2 ** (i / scale) for i in range(scale * int(log(max(earl_2p2n_xdkomzm[6]), 2) + 2))],
+                     bins=[2 ** (i / scale) for i in range(scale * int(log(max(earl_2p2n_xdkomzm_plot[6]), 2) + 2))],
                      x=i * 10 + 20,
                      label='$(2+2n)$-EA+RL' if i == 0 else None)
-    violin_histogram(earl_2p2_xdkomzm[i],
+    violin_histogram(earl_2p2_xdkomzm_plot[i],
                      color='red',
-                     bins=[2 ** (i / scale) for i in range(scale * int(log(max(earl_2p2_xdkomzm[6]), 2) + 2))],
+                     bins=[2 ** (i / scale) for i in range(scale * int(log(max(earl_2p2_xdkomzm_plot[6]), 2) + 2))],
                      x=i * 10 + 20,
                      label='$(2+2)$-EA+RL' if i == 0 else None)
-    violin_histogram(earlmod_1p1_xdkomzm[i],
+    violin_histogram(earlmod_1p1_xdkomzm_plot[i],
                      color='blue',
-                     bins=[2 ** (i / scale) for i in range(scale * int(log(max(earlmod_1p1_xdkomzm[6]), 2) + 2))],
+                     bins=[2 ** (i / scale) for i in range(scale * int(log(max(earlmod_1p1_xdkomzm_plot[6]), 2) + 2))],
                      x=i * 10 + 20,
                      label='modif. $(1+1)$-EA+RL' if i == 0 else None)
 # plt.plot(range(20, 101, 10), [sum(earlmod_1p1_xdkomzm[i]) / len(earlmod_1p1_xdkomzm[i]) for i in range(len(earlmod_1p1_xdkomzm))], 'bo-')
@@ -146,6 +146,55 @@ plt.savefig('pic/histograms.png',
             bbox_extra_artists=(plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.),),
             bbox_inches='tight',
             dpi=100)
+
+
+for with_zm in True, False:
+
+    for k in range(2, 6):
+        plt.subplot(409+k)
+        for i in range(9):
+            violin_histogram(earl_2p2n_xdkomzm[i],
+                             color='green',
+                             bins=[2 ** (i / scale) for i in range(scale * int(log(max(earl_2p2n_xdkomzm[6]), 2) + 2))],
+                             x=i * 10 + 20,
+                             label='$(2+2n)$-EA+RL' if i == 0 else None)
+            violin_histogram(earl_2p2_xdkomzm[i],
+                             color='red',
+                             bins=[2 ** (i / scale) for i in range(scale * int(log(max(earl_2p2_xdkomzm[6]), 2) + 2))],
+                             x=i * 10 + 20,
+                             label='$(2+2)$-EA+RL' if i == 0 else None)
+            violin_histogram(earlmod_1p1_xdkomzm[i],
+                             color='blue',
+                             bins=[2 ** (i / scale) for i in
+                                   range(scale * int(log(max(earlmod_1p1_xdkomzm[6]), 2) + 2))],
+                             x=i * 10 + 20,
+                             label='modif. $(1+1)$-EA+RL' if i == 0 else None)
+        # plt.plot(range(20, 101, 10), [sum(earlmod_1p1_xdkomzm[i]) / len(earlmod_1p1_xdkomzm[i]) for i in range(len(earlmod_1p1_xdkomzm))], 'bo-')
+        # plt.plot(range(20, 101, 10), [sum(earl_2p2_xdkomzm[i]) / len(earl_2p2_xdkomzm[i]) for i in range(len(earl_2p2_xdkomzm))], 'ro-')
+        # plt.plot(range(20, 101, 10), [sum(earl_2p2n_xdkomzm[i]) / len(earl_2p2n_xdkomzm[i]) for i in range(len(earl_2p2n_xdkomzm))], 'go-')
+        plt.yscale('log')
+        plt.xlim(15, 108)
+        plt.ylim(ymin=10)
+        plt.xlabel('$n$, individual size')
+        plt.ylabel('runtime, fitness\nevaluations')
+        plt.title('XdivK+OneMax+ZeroMax')
+
+    plt.subplots_adjust(wspace=0.5,
+                        hspace=0.4,
+                        left=0,
+                        right=0.5,
+                        top=2,
+                        bottom=0)
+    if with_zm:
+        plt.savefig('pic/xdkomzm_evals_appendix.png',
+                    bbox_inches='tight',
+                    dpi=200)
+    else:
+        plt.savefig('pic/xdkom_evals_appendix.png',
+                    bbox_extra_artists=(plt.legend(bbox_to_anchor=(0, -0.3), loc=2, borderaxespad=0.),),
+                    bbox_inches='tight',
+                    dpi=200)
+    plt.clf()
 # else:
 #     plt.savefig('pic/k{}_iters_box.png'.format(k),
 #                 bbox_inches='tight')
