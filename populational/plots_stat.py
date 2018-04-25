@@ -151,8 +151,8 @@ plt.savefig('pic/histograms.png',
 
 
 
-for k in range(2, 6):
-    plt.subplot(409+k)
+for k in range(2, 7):
+    plt.subplot(509+k)
     for n in range(20, 101, 10):
         violin_histogram(earlmod_1p1_xdkomzm[k][n],
                          color='blue',
@@ -181,13 +181,13 @@ for k in range(2, 6):
     plt.title('k = {}'.format(k))
 
 plt.subplots_adjust(wspace=0.5,
-                    hspace=0.4,
+                    hspace=0.5,
                     left=0,
                     right=0.5,
                     top=2,
                     bottom=0)
 plt.savefig('pic/xdkomzm_hist_appendix.png',
-            bbox_extra_artists=(plt.legend(bbox_to_anchor=(0, -0.3), loc=2, borderaxespad=0.),),
+            # bbox_extra_artists=(plt.legend(bbox_to_anchor=(0, -0.4), loc=2, borderaxespad=0.),),
             bbox_inches='tight',
             dpi=200)
 plt.clf()
@@ -196,8 +196,8 @@ plt.clf()
 
 
 
-for k in range(2, 6):
-    plt.subplot(409+k)
+for k in range(2, 7):
+    plt.subplot(509+k)
     for n in range(20, 101, 10):
         violin_histogram(earl_1p1_xdkom[k][n],
                          color='blue',
@@ -226,13 +226,13 @@ for k in range(2, 6):
     plt.title('k = {}'.format(k))
 
 plt.subplots_adjust(wspace=0.5,
-                    hspace=0.4,
+                    hspace=0.5,
                     left=0,
                     right=0.5,
                     top=2,
                     bottom=0)
 plt.savefig('pic/xdkom_hist_appendix.png',
-            bbox_extra_artists=(plt.legend(bbox_to_anchor=(0, -0.3), loc=2, borderaxespad=0.),),
+            bbox_extra_artists=(plt.legend(bbox_to_anchor=(0, -0.4), loc=2, borderaxespad=0.),),
             bbox_inches='tight',
             dpi=200)
 plt.clf()

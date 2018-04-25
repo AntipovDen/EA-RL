@@ -85,11 +85,11 @@ plt.savefig('pic/means.png',
 
 for with_zm in True, False:
 
-    for k in range(2, 6):
-        plt.subplot(409 + k)
-        plt.semilogy(n_range[:len(ea_1p1_xdk[-1])], ea_1p1_xdk[-1], 'ro-',
+    for k in range(2, 7):
+        plt.subplot(509 + k)
+        plt.semilogy(n_range[:len(ea_1p1_xdk[k - 2])], ea_1p1_xdk[k - 2], 'ro-',
                      label='$(1 + 1)$-EA')
-        plt.semilogy(n_range, ea_2p2_xdk[-1], 'bs-',
+        plt.semilogy(n_range, ea_2p2_xdk[k - 2], 'bs-',
                      label='$(2 + 2)$-EA')
 
         if not with_zm:
@@ -117,7 +117,7 @@ for with_zm in True, False:
         plt.xlim(15, 105)
 
     plt.subplots_adjust(wspace=0.5,
-                        hspace=0.4,
+                        hspace=0.5,
                         left=0,
                         right=0.5,
                         top=2,
@@ -128,7 +128,7 @@ for with_zm in True, False:
                     dpi=200)
     else:
         plt.savefig('pic/xdkom_evals_appendix.png',
-                    bbox_extra_artists=(plt.legend(bbox_to_anchor=(0, -0.3), loc=2, borderaxespad=0.),),
+                    bbox_extra_artists=(plt.legend(bbox_to_anchor=(0, -0.4), loc=2, borderaxespad=0.),),
                     bbox_inches='tight',
                     dpi=200)
     plt.clf()
